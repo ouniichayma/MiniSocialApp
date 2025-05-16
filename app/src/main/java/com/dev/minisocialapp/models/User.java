@@ -22,19 +22,52 @@ public class User {
         this.uid = uid;
     }
 
-    // Getters
-    public String getFullName() { return fullName; }
-    public String getEmail() { return email; }
-    public String getDateOfBirth() { return dateOfBirth; }
-    public String getPhone() { return phone; }
-    public String getProfileImageUrl() { return profileImageUrl; }
-    public String getUid() { return uid; }
 
-    // Setters
-    public void setFullName(String fullName) { this.fullName = fullName; }
-    public void setEmail(String email) { this.email = email; }
-    public void setDateOfBirth(String dateOfBirth) { this.dateOfBirth = dateOfBirth; }
-    public void setPhone(String phone) { this.phone = phone; }
-    public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
-    public void setUid(String uid) { this.uid = uid; }
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(String dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public void setProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
 }
