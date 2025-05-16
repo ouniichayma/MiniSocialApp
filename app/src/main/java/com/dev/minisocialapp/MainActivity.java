@@ -3,6 +3,7 @@ package com.dev.minisocialapp;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,6 +22,7 @@ import com.bumptech.glide.Glide;
 import com.dev.minisocialapp.activities.AddPostActivity;
 import com.dev.minisocialapp.adapters.PostsAdapter;
 import com.dev.minisocialapp.models.Post;
+import com.dev.minisocialapp.models.React;
 import com.dev.minisocialapp.models.User;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
@@ -52,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private PostsAdapter postAdapter;
     private List<Post> postList = new ArrayList<>();
     private List<User> userList = new ArrayList<>();
-    private DatabaseReference postsRef, usersRef;
+    private DatabaseReference postsRef, usersRef,reactRef;
     private FirebaseAuth auth;
 
 
@@ -64,6 +66,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        ImageButton menuButton = findViewById(R.id.menu_button);
+
+
+
+
+
+
+
+
+        
 
 
 
@@ -211,5 +223,22 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }

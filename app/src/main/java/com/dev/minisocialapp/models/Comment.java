@@ -7,6 +7,8 @@ public class Comment {
     private String text;
     private long timestamp;
 
+    private User user;
+
     public Comment() {}
     public Comment(String id, String postId, String userId, String text, long timestamp) {
         this.id = id;
@@ -15,6 +17,18 @@ public class Comment {
         this.text = text;
         this.timestamp = timestamp;
     }
+
+
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+
 
     public String getId() {
         return id;
@@ -55,4 +69,7 @@ public class Comment {
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
+
+
+
 }
