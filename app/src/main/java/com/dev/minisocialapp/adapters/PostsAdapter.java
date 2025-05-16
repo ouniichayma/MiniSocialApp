@@ -1,5 +1,7 @@
 package com.dev.minisocialapp.adapters;
 
+import android.content.Context;
+import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,10 +11,12 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.dev.minisocialapp.R;
 import com.dev.minisocialapp.models.Post;
 import com.dev.minisocialapp.models.User;
@@ -22,119 +26,109 @@ import java.util.Map;
 
 public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.PostViewHolder> {
 
-    private List<Post> posts;
-    private Map<String, User> usersMap; // Pour récupérer les infos utilisateur (nom, image)
-    private OnPostInteractionListener listener;
+private List<Post> posts;
+private Context context;
 
-    public interface OnPostInteractionListener {
-        void onLikeClicked(Post post);
-        void onDislikeClicked(Post post);
-        void onShowCommentsClicked(Post post);
-        void onSendComment(Post post, String commentText);
-    }
 
-    public PostsAdapter(List<Post> posts, Map<String, User> usersMap, OnPostInteractionListener listener) {
+
+
+    private List<User> users;
+
+    private String currentUserId;
+
+    public PostsAdapter(List<Post> posts, List<User> users, String currentUserId, Context context) {
         this.posts = posts;
-        this.usersMap = usersMap;
-        this.listener = listener;
+        this.users = users;
+        this.currentUserId = currentUserId;
+        this.context = context;
     }
 
-    @NonNull
+public static class PostViewHolder extends RecyclerView.ViewHolder {
+    TextView username, postTime, postContent;
+    ImageView postUserImage, postImage;
+
+    public PostViewHolder(View itemView) {
+        super(itemView);
+        username = itemView.findViewById(R.id.post_username);
+        postTime = itemView.findViewById(R.id.post_time);
+        postContent = itemView.findViewById(R.id.post_content);
+        postUserImage = itemView.findViewById(R.id.post_user_image);
+        postImage = itemView.findViewById(R.id.post_image);
+    }
+}
+
+@Override
+public PostViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    View view = LayoutInflater.from(context).inflate(R.layout.item_post, parent, false);
+    return new PostViewHolder(view);
+}
+
     @Override
-    public PostViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_post, parent, false);
-        return new PostViewHolder(view);
-    }
+    public void onBindViewHolder(PostViewHolder holder, int position) {
 
-    @Override
-    public void onBindViewHolder(@NonNull PostViewHolder holder, int position) {
-        Post post = posts.get(position);
-        User user = usersMap.get(post.getUserId());
-        holder.bind(post, user);
-    }
+            Post post = posts.get(position);
+            User postUser = getUserById(post.getUserId());
 
-    @Override
-    public int getItemCount() {
-        return posts.size();
-    }
-
-    class PostViewHolder extends RecyclerView.ViewHolder {
-        ImageView userImage, postImage;
-        TextView username, postTime, postContent, likeCount, dislikeCount, commentCount;
-        ImageButton likeBtn, dislikeBtn, commentBtn;
-        Button showCommentsBtn;
-        RecyclerView commentsRecyclerView;
-        LinearLayout commentInputLayout;
-        EditText commentInput;
-        ImageButton sendCommentBtn;
-
-        public PostViewHolder(@NonNull View itemView) {
-            super(itemView);
-            userImage = itemView.findViewById(R.id.post_user_image);
-            postImage = itemView.findViewById(R.id.post_image);
-            username = itemView.findViewById(R.id.post_username);
-            postTime = itemView.findViewById(R.id.post_time);
-            postContent = itemView.findViewById(R.id.post_content);
-            likeCount = itemView.findViewById(R.id.like_count);
-            dislikeCount = itemView.findViewById(R.id.dislike_count);
-            commentCount = itemView.findViewById(R.id.comment_count);
-            likeBtn = itemView.findViewById(R.id.like_button);
-            dislikeBtn = itemView.findViewById(R.id.dislike_button);
-            commentBtn = itemView.findViewById(R.id.comment_button);
-            showCommentsBtn = itemView.findViewById(R.id.show_comments_button);
-            commentsRecyclerView = itemView.findViewById(R.id.comments_recycler_view);
-            commentInputLayout = itemView.findViewById(R.id.comment_input_layout);
-            commentInput = itemView.findViewById(R.id.comment_input);
-            sendCommentBtn = itemView.findViewById(R.id.send_comment_button);
-        }
-
-        void bind(Post post, User user) {
-            // Afficher infos utilisateur
-            username.setText(user != null ? user.getFullName() : "Utilisateur");
-            // TODO : charger l’image utilisateur avec Glide/Picasso via user.getProfileImageUrl()
-
-            postContent.setText(post.getText());
-
-            // TODO : Formater timestamp en date relative "2h ago"
-            postTime.setText(formatTimestamp(post.getTimestamp()));
-
-            // Gérer image du post
-            if (post.getImageUrl() != null && !post.getImageUrl().isEmpty()) {
-                postImage.setVisibility(View.VISIBLE);
-                // Charger image avec Glide/Picasso
-                // Glide.with(postImage.getContext()).load(post.getImageUrl()).into(postImage);
+            if (postUser != null) {
+                holder.username.setText(postUser.getFullName());
+                Glide.with(context).load(postUser.getProfileImageUrl()).into(holder.postUserImage);
             } else {
-                postImage.setVisibility(View.GONE);
+                holder.username.setText("Utilisateur inconnu");
+                Glide.with(context).load(R.drawable.ic_profile_default).into(holder.postUserImage);
             }
 
-            // Exemple: charger le nombre de likes, dislikes, commentaires (à récupérer depuis ta source de données)
-            likeCount.setText("24");
-            dislikeCount.setText("3");
-            commentCount.setText("7");
+            holder.postContent.setText(post.getText());
 
-            // Click listeners
-            likeBtn.setOnClickListener(v -> listener.onLikeClicked(post));
-            dislikeBtn.setOnClickListener(v -> listener.onDislikeClicked(post));
-            showCommentsBtn.setOnClickListener(v -> listener.onShowCommentsClicked(post));
-            sendCommentBtn.setOnClickListener(v -> {
-                String commentText = commentInput.getText().toString().trim();
-                if (!commentText.isEmpty()) {
-                    listener.onSendComment(post, commentText);
-                    commentInput.setText("");
-                }
-            });
+            if (post.getTimestamp() > 0) {
+                holder.postTime.setText(getRelativeTime(post.getTimestamp()));
+            }
+
+            if (post.getImageUrl() != null && !post.getImageUrl().isEmpty()) {
+                holder.postImage.setVisibility(View.VISIBLE);
+                Glide.with(context).load(post.getImageUrl()).into(holder.postImage);
+            } else {
+                holder.postImage.setVisibility(View.GONE);
+            }
+
+
+
+
+        if (postUser != null) {
+            holder.username.setText(postUser.getFullName() != null ? postUser.getFullName() : "Nom manquant");
+
+            if (postUser.getProfileImageUrl() != null && !postUser.getProfileImageUrl().isEmpty()) {
+                Glide.with(context)
+                        .load(postUser.getProfileImageUrl())
+                        .into(holder.postUserImage);
+            } else {
+                holder.postUserImage.setImageResource(R.drawable.ic_profile_default);
+            }
+
+        } else {
+            holder.username.setText("Utilisateur inconnu");
+            holder.postUserImage.setImageResource(R.drawable.ic_profile_default);
         }
+
     }
 
-    private String formatTimestamp(long timestamp) {
-        // Implémenter la conversion timestamp -> "2h ago"
-        // Exemple simple (non exact) :
-        long diff = System.currentTimeMillis() - timestamp;
-        long minutes = diff / (60 * 1000);
-        if (minutes < 60) return minutes + "m ago";
-        long hours = minutes / 60;
-        if (hours < 24) return hours + "h ago";
-        long days = hours / 24;
-        return days + "d ago";
+
+
+    private User getUserById(String userId) {
+        for (User user : users) {
+            if (user.getUid().equals(userId)) {
+                return user;
+            }
+        }
+        return null;
     }
+
+@Override
+public int getItemCount() {
+    return posts.size();
+}
+
+private String getRelativeTime(long timestamp) {
+    // Formate le temps en "2h ago" etc.
+    return DateUtils.getRelativeTimeSpanString(timestamp).toString();
+}
 }

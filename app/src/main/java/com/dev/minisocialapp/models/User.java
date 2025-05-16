@@ -2,6 +2,8 @@ package com.dev.minisocialapp.models;
 
 
 public class User {
+
+
     private String fullName;
     private String email;
     private String dateOfBirth;

@@ -2,80 +2,214 @@ package com.dev.minisocialapp;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.bumptech.glide.Glide;
 import com.dev.minisocialapp.activities.AddPostActivity;
 import com.dev.minisocialapp.adapters.PostsAdapter;
 import com.dev.minisocialapp.models.Post;
 import com.dev.minisocialapp.models.User;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-public class MainActivity extends AppCompatActivity implements PostsAdapter.OnPostInteractionListener {
+
+
+
+import com.google.firebase.database.ValueEventListener;
+
+
+public class MainActivity extends AppCompatActivity {
 
     private RecyclerView postsRecyclerView;
-    private PostsAdapter adapter;
-    private List<Post> postsList = new ArrayList<>();
-    private Map<String, User> usersMap = new HashMap<>();
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private PostsAdapter postAdapter;
+    private List<Post> postList = new ArrayList<>();
+    private List<User> userList = new ArrayList<>();
+    private DatabaseReference postsRef, usersRef;
+    private FirebaseAuth auth;
+
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main); // ou ton layout principal
+        setContentView(R.layout.activity_main);
 
+
+
+
+
+
+        // Initialisation Firebase
+        auth = FirebaseAuth.getInstance();
+        postsRef = FirebaseDatabase.getInstance().getReference("posts");
+        usersRef = FirebaseDatabase.getInstance().getReference("users");
+
+
+
+
+
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser != null) {
+            Log.d("AUTH", "Utilisateur connecté: " + currentUser.getUid());
+        } else {
+            Log.e("AUTH", "Aucun utilisateur connecté !");
+        }
+
+        // Initialisation des vues
         postsRecyclerView = findViewById(R.id.posts_recycler_view);
-        postsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-
-
-        adapter = new PostsAdapter(postsList, usersMap, this);
-        postsRecyclerView.setAdapter(adapter);
-
-
-
+        swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
         FloatingActionButton fab = findViewById(R.id.add_post_fab);
+        ImageView profileImage = findViewById(R.id.profile_image);
+        TextView username = findViewById(R.id.username);
+
+        // Configurer le RecyclerView
+        postAdapter = new PostsAdapter(postList, userList, auth.getCurrentUser().getUid(), this);
+        postsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        postsRecyclerView.setAdapter(postAdapter);
+
+        // Charger les données
+        loadCurrentUser(profileImage, username);
+        loadPosts();
+
+        // Configurer le swipe to refresh
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            loadPosts();
+            swipeRefreshLayout.setRefreshing(false);
+        });
+
+        // Bouton pour ajouter un post
         fab.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, AddPostActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(MainActivity.this, AddPostActivity.class));
+        });
+
+
+
+
+
+    }
+
+    private void loadCurrentUser(ImageView profileImage, TextView username) {
+        String currentUserId = auth.getCurrentUser().getUid();
+        Log.d("USER_LOAD", "Chargement des infos de l'utilisateur avec l'ID: " + currentUserId);
+        usersRef.child(currentUserId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Log.d("USER_LOAD", "Snapshot exists: " + snapshot.exists());
+                User currentUser = snapshot.getValue(User.class);
+                if (currentUser != null) {
+                    Log.d("USER_LOAD", "Nom: " + currentUser.getFullName() + ", image: " + currentUser.getProfileImageUrl());
+                    username.setText(currentUser.getFullName());
+                    if (currentUser.getProfileImageUrl() != null && !currentUser.getProfileImageUrl().isEmpty()) {
+                        Glide.with(MainActivity.this)
+                                .load(currentUser.getProfileImageUrl())
+                                .into(profileImage);
+                    } else {
+                        Log.w("USER_IMAGE", "Aucune image trouvée pour l'utilisateur.");
+                       
+                    }
+
+                }else {
+                    Log.e("USER_LOAD", "Utilisateur null dans le snapshot !");
+                }
+            }
+
+
+
+
+
+
+
+                @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(MainActivity.this, "Erreur de chargement du profil", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
+    private void loadPosts() {
+        postsRef.orderByChild("timestamp").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                postList.clear();
+                Set<String> userIds = new HashSet<>();
 
+                for (DataSnapshot postSnapshot : snapshot.getChildren()) {
+                    Post post = postSnapshot.getValue(Post.class);
+                    if (post != null) {
+                        postList.add(post);
+                        userIds.add(post.getUserId());
+                    }
+                }
 
+                // Charger les utilisateurs correspondants
+                loadUsers(userIds);
+            }
 
-
-    @Override
-    public void onLikeClicked(Post post) {
-        // Logique pour aimer le post (ex: update Firebase)
-        Toast.makeText(this, "Liked post: " + post.getText(), Toast.LENGTH_SHORT).show();
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(MainActivity.this, "Erreur lors du chargement des posts", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    @Override
-    public void onDislikeClicked(Post post) {
-        Toast.makeText(this, "Disliked post: " + post.getText(), Toast.LENGTH_SHORT).show();
+    private void loadUsers(Set<String> userIds) {
+        usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                userList.clear();
+                for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                    User user = userSnapshot.getValue(User.class);
+                    if (user != null && user.getUid() != null) {
+                        Log.d("UserLoaded", "User: " + user.getUid() + " - " + user.getFullName());
+                        if (userIds.contains(user.getUid())) {
+                            userList.add(user);
+                        }
+                    }
+
+                }
+
+                // Inverser la liste des posts (posts récents en haut)
+                Collections.reverse(postList);
+
+                // Notifier l'adapter
+                postAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(MainActivity.this, "Erreur lors du chargement des utilisateurs", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    @Override
-    public void onShowCommentsClicked(Post post) {
-        Toast.makeText(this, "Afficher commentaires du post: " + post.getText(), Toast.LENGTH_SHORT).show();
-        // Gérer l’affichage / cache du RecyclerView commentaires dans l’adapter via notifyItemChanged
-    }
-
-    @Override
-    public void onSendComment(Post post, String commentText) {
-        Toast.makeText(this, "Commentaire envoyé: " + commentText, Toast.LENGTH_SHORT).show();
-        // Envoyer le commentaire sur Firebase / serveur
-    }
 }

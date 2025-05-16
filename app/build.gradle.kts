@@ -46,5 +46,7 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation(libs.cloudinary)
 
+    implementation(libs.glide)
+
 
 }

@@ -12,7 +12,7 @@ firebaseAuth = "23.2.0"
 firebaseDatabase = "21.0.0"
 cloudinary = "2.2.0"
 swiperefreshlayout = "1.1.0" # ou la dernière version
-
+glide="4.12.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -28,7 +28,7 @@ cloudinary = { group = "com.cloudinary", name = "cloudinary-android", version.re
 swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
 
 
-
+glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
