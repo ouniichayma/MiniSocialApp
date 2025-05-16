@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Background Image -->
+    <ImageView
+        android:id="@+id/bgImage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/social_background"
+        android:contentDescription="Background"
+        android:alpha="0.25" />
+
+    <!-- Semi-transparent overlay -->
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <EditText
+            android:id="@+id/etEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Email"
+            android:inputType="textEmailAddress"
+            android:background="@drawable/edit_text_bg"
+            android:padding="12dp"
+            android:textColor="#360140"
+            android:textColorHint="#360140"
+            android:layout_marginBottom="16dp"/>
+
+        <EditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Mot de passe"
+            android:inputType="textPassword"
+            android:background="@drawable/edit_text_bg"
+            android:padding="12dp"
+            android:textColor="#360140"
+            android:textColorHint="#360140"
+            android:layout_marginBottom="24dp"/>
+
+        <Button
+            android:id="@+id/btnLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Se connecter"
+            android:backgroundTint="#360140"
+            android:textColor="#FFFFFF"
+            android:padding="12dp"/>
+
+    </LinearLayout>
+</RelativeLayout>
