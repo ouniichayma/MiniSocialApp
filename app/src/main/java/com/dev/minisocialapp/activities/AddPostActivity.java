@@ -19,6 +19,7 @@ import com.dev.minisocialapp.R;
 import com.dev.minisocialapp.models.Post;
 import com.dev.minisocialapp.utils.CloudinaryUtils;
 import com.dev.minisocialapp.utils.FileUtils;
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -40,6 +41,11 @@ public class AddPostActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_post);
+
+
+        MaterialButton backButton = findViewById(R.id.back_button);
+        backButton.setOnClickListener(v -> finish());
+
 
         // Initialisation des vues
         postText = findViewById(R.id.post_text);

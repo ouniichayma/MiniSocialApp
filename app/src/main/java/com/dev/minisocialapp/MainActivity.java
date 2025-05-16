@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,6 +21,8 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.bumptech.glide.Glide;
 import com.dev.minisocialapp.activities.AddPostActivity;
+import com.dev.minisocialapp.activities.EditProfileActivity;
+import com.dev.minisocialapp.activities.LoginActivity;
 import com.dev.minisocialapp.adapters.PostsAdapter;
 import com.dev.minisocialapp.models.Post;
 import com.dev.minisocialapp.models.React;
@@ -72,6 +75,35 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
+
+
+
+
+        menuButton.setOnClickListener(view -> {
+            PopupMenu popupMenu = new PopupMenu(this, view);
+            popupMenu.getMenuInflater().inflate(R.menu.profile_menu, popupMenu.getMenu());
+
+            popupMenu.setOnMenuItemClickListener(item -> {
+                int id = item.getItemId();
+                if (id == R.id.action_edit_profile) {
+                    // Ouvre l'activité ou le fragment de modification de profil
+                    Intent intent = new Intent(this, EditProfileActivity.class);
+                    startActivity(intent);
+                    return true;
+                } else if (id == R.id.action_logout) {
+                    // Déconnexion (Firebase par exemple)
+                    FirebaseAuth.getInstance().signOut();
+                    Intent intent = new Intent(this, LoginActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    return true;
+                }
+                return false;
+            });
+
+            popupMenu.show();
+        });
 
 
 

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Image de fond avec opacité -->
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/social_background"
+        android:alpha="0.6" />
+
+    <!-- Contenu principal avec défilement -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/profile_image"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_gravity="center"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_profile_default"
+                android:background="@drawable/circle_background"
+                android:padding="4dp" />
+
+            <Button
+                android:id="@+id/button_choose_image"
+                android:text="Choisir une image"
+                android:layout_marginTop="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center" />
+
+            <EditText
+                android:id="@+id/edit_full_name"
+                android:hint="Nom complet"
+                android:background="@drawable/edit_text_bg"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="12dp"
+                android:textColor="#360140"
+                android:textColorHint="#360140"
+                android:layout_marginBottom="16dp" />
+
+            <EditText
+                android:id="@+id/edit_email"
+                android:background="@drawable/edit_text_bg"
+                android:hint="Email"
+                android:inputType="textEmailAddress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="12dp"
+                android:textColor="#360140"
+                android:textColorHint="#360140"
+                android:layout_marginBottom="16dp" />
+
+            <EditText
+                android:id="@+id/edit_phone"
+                android:hint="Téléphone"
+                android:background="@drawable/edit_text_bg"
+                android:inputType="phone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="12dp"
+                android:textColor="#360140"
+                android:textColorHint="#360140"
+                android:layout_marginBottom="16dp" />
+
+            <EditText
+                android:id="@+id/edit_dob"
+                android:hint="Date de naissance"
+                android:inputType="date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/edit_text_bg"
+                android:padding="12dp"
+                android:textColor="#360140"
+                android:textColorHint="#360140"
+                android:layout_marginBottom="16dp" />
+
+            <Button
+                android:id="@+id/button_save"
+                android:text="Enregistrer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp" />
+
+        </LinearLayout>
+    </ScrollView>
+</FrameLayout>

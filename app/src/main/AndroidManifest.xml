@@ -33,6 +33,7 @@
       <activity android:name=".activities.LoginActivity"></activity>
         <activity android:name=".MainActivity"></activity>
         <activity android:name=".activities.AddPostActivity"></activity>
+        <activity android:name=".activities.EditProfileActivity"/>
 
     </application>
 
