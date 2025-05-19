@@ -39,20 +39,15 @@ import java.util.Set;
 
 public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.PostViewHolder> {
 
+    // Liste des publications et utilisateurs
 private List<Post> posts;
 private Context context;
 
-
-
-
     private List<User> users;
-
-
 
     private String currentUserId;
 
-
-
+    // Constructeur
     public PostsAdapter(List<Post> posts, List<User> users, String currentUserId, Context context) {
         this.posts = posts;
         this.users = users;
@@ -60,15 +55,14 @@ private Context context;
         this.context = context;
     }
 
+    // Classe interne représentant la vue d’un seul post
 public static class PostViewHolder extends RecyclerView.ViewHolder {
+        // Composants d'un post
     TextView username, postTime, postContent;
     ImageView postUserImage, postImage;
 
-
     ImageButton likeButton, dislikeButton, commentButton;
     TextView likeCount, dislikeCount, commentCount;
-
-
 
     Button showCommentsButton;
     RecyclerView commentsRecyclerView;
@@ -86,18 +80,12 @@ public static class PostViewHolder extends RecyclerView.ViewHolder {
         postUserImage = itemView.findViewById(R.id.post_user_image);
         postImage = itemView.findViewById(R.id.post_image);
 
-
-
         likeButton = itemView.findViewById(R.id.like_button);
         dislikeButton = itemView.findViewById(R.id.dislike_button);
         commentButton = itemView.findViewById(R.id.comment_button);
         likeCount = itemView.findViewById(R.id.like_count);
         dislikeCount = itemView.findViewById(R.id.dislike_count);
         commentCount = itemView.findViewById(R.id.comment_count);
-
-
-
-
 
         showCommentsButton = itemView.findViewById(R.id.show_comments_button);
         commentsRecyclerView = itemView.findViewById(R.id.comments_recycler_view);
@@ -108,35 +96,41 @@ public static class PostViewHolder extends RecyclerView.ViewHolder {
     }
 }
 
+
+  //  Méthode appelée pour créer la vue d'un post à partir du layout item_post.xml
 @Override
 public PostViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    // Création de la vue pour chaque élément de la liste
     View view = LayoutInflater.from(context).inflate(R.layout.item_post, parent, false);
     return new PostViewHolder(view);
 }
 
+
+   // méthode principale de liaison des données
     @Override
     public void onBindViewHolder(PostViewHolder holder, int position) {
-
+        // Liaison des données à la vue
             Post post = posts.get(position);
             User postUser = getUserById(post.getUserId());
-
-
-
         String postId = post.getId();
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
+        // Chargement des réactions et des commentaires
+
         loadReactions(holder, postId, userId);
         loadCommentsCount(holder, postId);
-        handleLikeDislikeClicks(holder, postId, userId);
 
 
+        handleLikeDislikeClicks(holder, postId, post, userId);
 
+
+        // Affichage du contenu textuel et de l'heure relative
             holder.postContent.setText(post.getText());
-
             if (post.getTimestamp() > 0) {
                 holder.postTime.setText(getRelativeTime(post.getTimestamp()));
             }
 
+        // Affichage de l’image du post si elle existe
             if (post.getImageUrl() != null && !post.getImageUrl().isEmpty()) {
                 holder.postImage.setVisibility(View.VISIBLE);
                 Glide.with(context).load(post.getImageUrl()).into(holder.postImage);
@@ -146,7 +140,7 @@ public PostViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
 
 
-
+        // Affichage des informations de l’utilisateur
         if (postUser != null) {
             holder.username.setText(postUser.getFullName() != null ? postUser.getFullName() : "Nom manquant");
 
@@ -174,7 +168,7 @@ public PostViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
 
 
-
+        // Gérer l'affichage / masquage des commentaires
 
         holder.showCommentsButton.setOnClickListener(v -> {
             boolean isVisible = holder.commentsRecyclerView.getVisibility() == View.VISIBLE;
@@ -238,6 +232,8 @@ public PostViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         commentMap.put("text", commentText);
         commentMap.put("timestamp", System.currentTimeMillis());
 
+        sendNotification(getPostOwnerId(postId), userId , "comment", postId);
+
         commentRef.child(commentId).setValue(commentMap)
                 .addOnSuccessListener(aVoid -> {
                     onSuccess.run();
@@ -249,7 +245,14 @@ public PostViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
 
 
-
+    private String getPostOwnerId(String postId) {
+        for (Post p : posts) {
+            if (p.getId().equals(postId)) {
+                return p.getUserId();
+            }
+        }
+        return "";
+    }
 
 
     private void getCommentsForPost(String postId, CommentAdapter.CommentCallback callback) {
@@ -354,7 +357,7 @@ public PostViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
 
 
-    private void handleLikeDislikeClicks(PostViewHolder holder, String postId, String userId) {
+    private void handleLikeDislikeClicks(PostViewHolder holder, String postId, Post post, String userId) {
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("reactions").child(postId);
 
         holder.likeButton.setOnClickListener(v -> {
@@ -363,9 +366,18 @@ public PostViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
                     String current = snapshot.getValue(String.class);
                     if ("like".equals(current)) {
                         ref.child(userId).removeValue();
+
                     } else {
                         ref.child(userId).setValue("like");
+
+                        //notif
+
+
+                        sendNotification(post.getUserId(), userId, "like", postId);
                     }
+
+
+
                 }
                 public void onCancelled(@NonNull DatabaseError error) {}
             });
@@ -379,6 +391,8 @@ public PostViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
                         ref.child(userId).removeValue();
                     } else {
                         ref.child(userId).setValue("dislike");
+                      //notif
+                        sendNotification(post.getUserId(), userId, "dislike", postId);
                     }
                 }
                 public void onCancelled(@NonNull DatabaseError error) {}
@@ -460,6 +474,30 @@ private String getRelativeTime(long timestamp) {
 
 
 
+
+
+
+
+    private void sendNotification(String toUserId, String fromUserId, String type, String postId) {
+        DatabaseReference notifRef = FirebaseDatabase.getInstance().getReference("notifications");
+        String notifId = notifRef.push().getKey();
+
+
+
+
+        Map<String, Object> notifData = new HashMap<>();
+        notifData.put("toUserId", toUserId);
+        notifData.put("fromUserId", fromUserId);
+        notifData.put("type", type); // like, dislike, comment
+        notifData.put("postId", postId);
+        notifData.put("timestamp", System.currentTimeMillis());
+        notifData.put("isRead",  false);
+
+
+
+
+        notifRef.child(notifId).setValue(notifData);
+    }
 
 
 

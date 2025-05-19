@@ -18,8 +18,10 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class LoginActivity extends AppCompatActivity {
 
+    // Déclaration des composants de l'interface utilisateur
     private EditText etEmail, etPassword;
     private Button btnLogin;
+
     private FirebaseAuth auth;
 
     @Override
@@ -27,11 +29,15 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        // Liaison des composants du layout aux variables Java
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
+
+        // Initialisation de Firebase Authentication
         auth = FirebaseAuth.getInstance();
 
+        // Définir le comportement du bouton lorsqu'on clique dessus
         btnLogin.setOnClickListener(v -> loginUser());
     }
 
@@ -41,17 +47,19 @@ public class LoginActivity extends AppCompatActivity {
 
 
 
-
+// Méthode personnalisée pour afficher une Toast stylisée
 
     private void showCustomToast(String message, boolean success) {
         LayoutInflater inflater = getLayoutInflater();
         View layout = inflater.inflate(R.layout.custom_toast, findViewById(android.R.id.content), false);
 
+        // Récupère les éléments de la toast personnalisée
         TextView toastText = layout.findViewById(R.id.toast_message);
         ImageView toastIcon = layout.findViewById(R.id.toast_icon);
 
         toastText.setText(message);
 
+        // Selon le succès ou l’échec, on change l’icône et le fond
         if (success) {
             toastIcon.setImageResource(R.drawable.ic_check_circle); // Icône de succès
             layout.setBackgroundResource(R.drawable.toast_background);
